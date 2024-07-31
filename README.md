@@ -1,7 +1,8 @@
 # Trabalho de Estrutura de Dados I
 ## Tema: Criar um gerenciador de aeroporto utilizando as estruturas aprendidas até então (Lista, pilha ou fila);
 
-### Estruturas usadas: Fila com alocação dinâmica
+### Estruturas usadas: 
+Fila com alocação dinâmica
 
 ### Aeroporto:
 1. Possui 3 pistas, usadas tanto para pouso quanto pra voo, uma em cada iteração
