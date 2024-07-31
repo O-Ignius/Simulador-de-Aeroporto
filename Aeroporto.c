@@ -14,6 +14,7 @@ typedef struct
 {
     float id;
     int combustivel;
+    int iteracaoCriacao;
 } aviao;
 
 typedef struct celula *pointer;
@@ -56,7 +57,7 @@ int geraQntAviao() {
     return(rand() % (maxCreate + 1));
 }
 
-aviao criaAviao(int id) {
+aviao criaAviao(int id, int iteracao) {
     aviao av;
     
     if (id % 2 == 0) {  //avião pousado, tem ID par
@@ -67,6 +68,7 @@ aviao criaAviao(int id) {
         av.id = id;
         av.combustivel = geraCombustivel();
     }
+    av.iteracaoCriacao = iteracao;
 
     return (av);
 }
@@ -101,6 +103,17 @@ aviao retiraFifo(lista *fifo) {
     fifo->first = fifo->first->prox; //avança ponteiro para o próximo da fila;
     (fifo->tam)--;
     free(aux);
+}
+
+//retorna 1 caso seja necessário efetuar o pouso, caso não, retorna 1
+int pousoPrioritario(lista *fifoPouso, int *pousadosQUASE) {
+    if (fifoPouso->first->item.combustivel == 1) {  //pouso é prioridade para avião não cair
+        retiraFifo(fifoPouso);
+        (*pousadosQUASE)++;
+        return 1;
+    }
+
+    return 0;
 }
 
 void fifoVPista(aviao decolar, lista *fifoVP1, lista *fifoVP2, lista *fifoVP3) {    // adiciona as fifo's de voo
@@ -192,13 +205,68 @@ int pousarEmerg(pointer fifoPP3, int *pousados, int *pousadosQUASE) {
     return 0;
 }
 
-void voar(lista *fifoVP1, lista *fifoVP2, lista *fifoVP3, int *decolados, pointer fifoPP3, int *pousados, int *pousadosQUASE) {
+void voar(lista *fifoVP1, lista *fifoVP2, lista *fifoVP3, int *decolados, pointer fifoPP3, int *pousados, int *pousadosQUASE /* lista *fifoPP1, lista *fifoPP2, lista *fifoPP12, lista *fifoPP22 */) {
     if (pousarEmerg(fifoPP3, pousados, pousadosQUASE) == 0) {  //se não houve pousos de emergência, decole!
         if (fifoVP3->first != NULL) {
             retiraFifo(fifoVP3);
             (*decolados)++;
         }
     }
+
+    /*
+        //primeira pista
+        int auxP1 = 0, auxP2 = 0;
+        if (fifoPP1->tam > fifoPP12->tam) {//verifica qual das duas é a maior
+            //verifica se é preciso pouso de emergência
+            if (pousoPrioritario(fifoPP1, pousadosQUASE) == 0) {
+                ;
+            }
+            else {
+                auxP1++;
+            }
+        }
+        else {
+            //verifica se é preciso pouso de emergência
+            if (pousoPrioritario(fifoPP12, pousadosQUASE) == 0) {
+                ;
+            }
+            else {
+                auxP1++;
+            }
+        }
+        if (auxP1 == 0) {   //se não houve pousos de emergencia, decole
+            if (fifoVP1->first !=NULL) {
+                retiraFifo(fifoVP1);
+                (*decolados)++;
+            }
+        }
+    
+        //pista 2
+        if (fifoPP2->tam > fifoPP22->tam) {//verifica qual das duas é a maior
+            //verifica se é preciso pouso de emergência
+            if (pousoPrioritario(fifoPP2, pousadosQUASE) == 0) {
+                ;
+            }
+            else {
+                auxP2++;
+            }
+        }
+        else {
+            //verifica se é preciso pouso de emergência
+            if (pousoPrioritario(fifoPP22, pousadosQUASE) == 0) {
+                ;
+            }
+            else {
+                auxP2++;
+            }
+        }
+        if (auxP2 == 0) {   //se não houve pousos de emergencia, decole
+            if (fifoVP2->first !=NULL) {
+                retiraFifo(fifoVP2);
+                (*decolados)++;
+            }
+        }
+    */
 
     //primeira pista
     if (fifoVP1->first !=NULL) {
@@ -256,42 +324,43 @@ void pousar(lista *fifoPP1, lista *fifoPP2, lista *fifoPP12, lista *fifoPP22, po
     }
 }
 
-void verificaCaidos(lista *fifoPP1, lista *fifoPP2, lista *fifoPP12, lista *fifoPP22, int *caidos) {
-    if (fifoPP1->first != NULL) {
-        while (fifoPP1->first->item.combustivel < 1)   //retira da 1° fila da primeira pista os caidos
-        {
-            retiraFifo(fifoPP1);
-            (*caidos)++;
-        }
-    }
-
-    if (fifoPP12->first != NULL) {
-        while (fifoPP12->first->item.combustivel < 1)   //retira da 2° fila da primeira pista os caidos
-        {
-            retiraFifo(fifoPP12);
-            (*caidos)++;
-        }
-    }
-    
-    if (fifoPP2->first != NULL) {
-        while (fifoPP2->first->item.combustivel < 1)   //retira da 1° fila da segunda pista os caidos
-        {
-            retiraFifo(fifoPP2);
-            (*caidos)++;
-        }
-    }
-
-    if (fifoPP22->first != NULL) {
-        while (fifoPP22->first->item.combustivel < 1)   //retira da 2° fila da segunda pista os caidos
-        {
-            retiraFifo(fifoPP22);
-            (*caidos)++;
+void diminuiCombustivel(lista *fifo, int iteraAtual, int *caidos) {
+    if (fifo->first != NULL) {
+        if (iteraAtual > fifo->first->item.iteracaoCriacao) {   //se não tiver sido criado na mesma iteração que a atual
+            if ((fifo->first->item.combustivel - (iteraAtual - fifo->first->item.iteracaoCriacao)) >= 1) {
+                fifo->first->item.combustivel = fifo->first->item.combustivel - (iteraAtual - fifo->first->item.iteracaoCriacao);
+            }
+            else {  //se o primeiro item da fifo não ter combustivel maior ou igual a 1, ele é retirado, pois o avião caiu
+                while ((fifo->first->item.combustivel - (iteraAtual - fifo->first->item.iteracaoCriacao)) < 1)
+                {
+                    retiraFifo(fifo);
+                    (*caidos)++;
+                    diminuiCombustivel(fifo, iteraAtual, caidos);
+                    return;
+                }
+                
+            }
         }
     }
 }
 
-void avioesPousadosSReserva(int pousadosQUASE) {
-    printf("\nAviões pousados sem reserva de combustível: \t%d\n\n", pousadosQUASE);
+void verificaCaidos(lista *fifoPP1, lista *fifoPP2, lista *fifoPP12, lista *fifoPP22, int iteraAtual, int *caidos) {
+    //fila 1 | 1° pista
+    diminuiCombustivel(fifoPP1, iteraAtual, caidos);
+
+    //fila 2 | 1° pista
+    diminuiCombustivel(fifoPP12, iteraAtual, caidos);
+
+    //fila 1 | 2° pista
+    diminuiCombustivel(fifoPP2, iteraAtual, caidos);
+
+    //fila 2 | 2° pista
+    diminuiCombustivel(fifoPP22, iteraAtual, caidos);
+}
+
+void relatorioAvioes(int pousadosQUASE, int vooGerados, int pousadoGerados) {
+    printf("\nAviões pousados sem reserva de combustível: \t\t%d\n", pousadosQUASE);
+    printf("Aviões voando gerados nesta iteração: \t\t\t%d \nAviões prontos para decolar gerados nesta iteração: \t%d \n\n", vooGerados, pousadoGerados);
 }
 
 void relatórioFilasVoo(lista *fifoVP1, lista *fifoVP2, lista *fifoVP3) {
@@ -327,11 +396,11 @@ void relatórioFilasAterrissagem(lista *fifoPP1, lista *fifoPP2, lista *fifoPP12
         printf("Fila 2 (Pista 1):     Tempo médio de decolagem: %d iterações \n\tid do avião: %0.0f | combustível: %d \n", fifoPP12->tam, fifoPP12->first->item.id, fifoPP12->first->item.combustivel);
     }
     if (fifoPP2->first != NULL) {
-        printf("Fila 1 (Pista 1):     Tempo médio de decolagem: %d iterações \n\tid do avião: %0.0f | combustível: %d \n", fifoPP2->tam, fifoPP2->first->item.id, fifoPP2->first->item.combustivel);
+        printf("Fila 1 (Pista 2):     Tempo médio de decolagem: %d iterações \n\tid do avião: %0.0f | combustível: %d \n", fifoPP2->tam, fifoPP2->first->item.id, fifoPP2->first->item.combustivel);
         control++;
     }
     if (fifoPP22->first != NULL) {
-        printf("Fila 2 (Pista 1):     Tempo médio de decolagem: %d iterações \n\tid do avião: %0.0f | combustível: %d \n", fifoPP22->tam, fifoPP22->first->item.id, fifoPP22->first->item.combustivel);
+        printf("Fila 2 (Pista 2):     Tempo médio de decolagem: %d iterações \n\tid do avião: %0.0f | combustível: %d \n", fifoPP22->tam, fifoPP22->first->item.id, fifoPP22->first->item.combustivel);
     }
     if (control == 0) {
         printf("\t!! Todas as filas vazias !!\n");
@@ -342,20 +411,22 @@ void relatorioDinam(int decolados, int pousados, int caidos) {
     printf("\nTotal de aviões pousados: \t%d \nTotal de aviões decolados: \t%d \nTotal quedas de aviões: \t%d \n", pousados, decolados, caidos);
 }
 
-void relatorioGeral(int decolados, int pousados, int caidos, int iteracoes) {
-    printf("\t\t!! RELATÓRIO FINAL !! \nTotal de aviões pousados: \t%d \nTotal de aviões decolados: \t%d \nTotal quedas de aviões: \t%d \nTotal de iterações: \t%d\n", pousados, decolados, caidos, (iteracoes - 1));
+void relatorioGeral(int decolados, int pousados, int caidos, int iteracoes, int pousadoGerados, int vooGerados) {
+    printf("\t\t!! RELATÓRIO FINAL !! \nTotal de aviões prontos para decolagem criados: \t%d\nTotal de aviões voando criados: \t\t\t%d \nTotal de aviões pousados: \t\t\t\t%d \nTotal de aviões decolados: \t\t\t\t%d \nTotal quedas de aviões: \t\t\t\t%d \nTotal de iterações: \t\t\t\t\t%d\n", pousadoGerados, vooGerados, pousados, decolados, caidos, (iteracoes - 2));
 }
 
-void centralControle(int *idP, int *idV, int *alternate, lista *fifoVP1, lista *fifoVP2, lista *fifoVP3, int *decolados, 
-lista *fifoPP1, lista *fifoPP2, lista *fifoPP12, lista *fifoPP22, pointer fifoPP3, int *pousados, int *caidos, int *pousadosQUASE) {
-    int qntAV;
+void centralControle(int iteracao, int *idP, int *idV, int *alternate, lista *fifoVP1, lista *fifoVP2, lista *fifoVP3, int *decolados, 
+lista *fifoPP1, lista *fifoPP2, lista *fifoPP12, lista *fifoPP22, pointer fifoPP3, int *pousados, int *caidos, int *pousadosQUASE, int *vooGerados, int *pousadoGerados) {
+    int qntAV, pousadosIteracao, voandoIteracao;
     aviao auxAV;
     
     //cria aviões pousados prontos para decolar
     qntAV = geraQntAviao();
+    pousadosIteracao = qntAV;
+    (*pousadoGerados) += qntAV;
     while (qntAV > 0)
     {
-        auxAV = criaAviao(*idP);                        //adiciona coisas ao avião, como combustivel e ID
+        auxAV = criaAviao(*idP, iteracao);                        //adiciona coisas ao avião, como combustivel e ID
         (*idP) += 2;                                    // incrementa o ID usado para os aviões que estão pousados
 
         fifoVPista(auxAV, fifoVP1, fifoVP2, fifoVP3);   //adiciona avião em uma das pistas
@@ -365,9 +436,11 @@ lista *fifoPP1, lista *fifoPP2, lista *fifoPP12, lista *fifoPP22, pointer fifoPP
 
     //cria aviões voando, preparados para pousar
     qntAV = geraQntAviao();
+    voandoIteracao = qntAV;
+    (*vooGerados) += qntAV;
     while (qntAV > 0)
     {
-        auxAV = criaAviao(*idV);                        //adiciona coisas ao avião, como combustivel e ID
+        auxAV = criaAviao(*idV, iteracao);                        //adiciona coisas ao avião, como combustivel e ID
         (*idV) += 2;                                    // incrementa o ID usado para os aviões que estão pousados
 
         fifoPPista(auxAV, fifoPP1, fifoPP2, fifoPP12, fifoPP22, fifoPP3);   //adiciona avião em uma das pistas
@@ -375,7 +448,7 @@ lista *fifoPP1, lista *fifoPP2, lista *fifoPP12, lista *fifoPP22, pointer fifoPP
         qntAV--;
     }
 
-    verificaCaidos(fifoPP1, fifoPP2, fifoPP12, fifoPP22, caidos);   //verifica se o primeiro caiu, se sim, retira ele e todos seguintes que cairam
+    verificaCaidos(fifoPP1, fifoPP2, fifoPP12, fifoPP22, iteracao, caidos);   //verifica se o primeiro caiu, se sim, retira ele e todos seguintes que cairam
 
     if (*alternate == 0) {  //momento para pousar os aviões voando
         pousar(fifoPP1, fifoPP2, fifoPP12, fifoPP22, fifoPP3, pousados, pousadosQUASE);
@@ -392,12 +465,12 @@ lista *fifoPP1, lista *fifoPP2, lista *fifoPP12, lista *fifoPP22, pointer fifoPP
     relatórioFilasVoo(fifoVP1, fifoVP2, fifoVP3);
     relatórioFilasAterrissagem(fifoPP1, fifoPP2, fifoPP12, fifoPP22);
     relatorioDinam(*decolados, *pousados, *caidos);
-    avioesPousadosSReserva(*pousadosQUASE);
+    relatorioAvioes(*pousadosQUASE, voandoIteracao, pousadosIteracao);
 }
 
 int main () {
                //idP = ID dos pousados = pares | idV = ID dos voando = Impares
-    int ite = 1, idP = 0, idV = 1;  //quantia de pousados = ((id / 2) + 1)      | quantia de voandos = ((id + 1) / 2)
+    int ite = 1, idP = 0, idV = 1, vooGerados = 0, pousadoGerados = 0;  //quantia de pousados = ((id / 2) + 1)      | quantia de voandos = ((id + 1) / 2)
     int decolados = 0, pousados = 0, caidos = 0, pousadosQUASE = 0, alternate = 0; //var alternate é usada para alternar entre voo e pouso, 0 para pouso e 1 para vôo
     char op[2];
 
@@ -410,17 +483,17 @@ int main () {
 
     while (1)
     {
-        printf("%d° iteração: \nPRESS ENTER TO START !\n", ite);
+        printf("%d° iteração: \nPRESS ENTER TO START or c to QUIT !\n", ite);
         setbuf(stdin,NULL);
         read(STDIN_FILENO, op, 2);
         ite++;
         if (op[0] == 'c') {
             break;
         }
-        centralControle(&idP, &idV, &alternate, &fifoVP1, &fifoVP2, &fifoVP3, &decolados, &fifoPP1, &fifoPP2, &fifoPP12, &fifoPP22, fifoPP3, &pousados, &caidos, &pousadosQUASE);
+        centralControle(ite, &idP, &idV, &alternate, &fifoVP1, &fifoVP2, &fifoVP3, &decolados, &fifoPP1, &fifoPP2, &fifoPP12, &fifoPP22, fifoPP3, &pousados, &caidos, &pousadosQUASE, &vooGerados, &pousadoGerados);
     }
 
-    relatorioGeral(decolados, pousados, caidos, ite);
+    relatorioGeral(decolados, pousados, caidos, ite, pousadoGerados, vooGerados);
 
     return 0;
 }
