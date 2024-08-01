@@ -31,6 +31,7 @@ typedef struct
     int tam;
 } lista;
 
+//retorna 1 se lista vazia
 int Empt (lista Lista) {
     if (Lista.first == NULL) {
         return 1;
@@ -42,10 +43,10 @@ int Empt (lista Lista) {
 
 void printaPousoORDecolagem(int qual, aviao av) { //qual == 0 = decolagem | qual == 1 = pouso
     if (qual == 0) {
-        printf("O avião #%d acaba de decolar !!\n", av.id);
+        printf("O avião #%0.0f acaba de decolar !!\n", av.id);
     }
     else {
-        printf("O avião #%d pousou com %d combustivel!\n", av.id, av.combustivel);
+        printf("O avião #%0.0f pousou com %d combustivel!\n", av.id, av.combustivel);
     }
 }
 
