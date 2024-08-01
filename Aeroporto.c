@@ -279,9 +279,13 @@ void voar(lista *fifoVP1, lista *fifoVP2, lista *fifoVP3, int *decolados, pointe
     }
 }
 
-void pousar(lista *fifoPP1, lista *fifoPP2, lista *fifoPP12, lista *fifoPP22, pointer fifoPP3, int *pousados, int *pousadosQUASE) {
-    //verifica se há pousos de emergência
-    pousarEmerg(fifoPP3, pousados, pousadosQUASE);
+void pousar(lista *fifoPP1, lista *fifoPP2, lista *fifoPP12, lista *fifoPP22, pointer fifoPP3, int *pousados, int *pousadosQUASE, lista *fifoVP3, int *decolados) {
+    if (pousarEmerg(fifoPP3, pousados, pousadosQUASE) == 0) {  //se não houve pousos de emergência, decole!
+        if (fifoVP3->first != NULL) {
+            retiraFifo(fifoVP3);
+            (*decolados)++;
+        }
+    }
 
     //primeira pista, verifica qual tem maior necessidade de pouso entre as filas da pista, caso nenhum esteja próximo de cair, retira da maior fila
     if ((fifoPP1->first != NULL) && (fifoPP1->first->item.combustivel < combEmerg)) {
@@ -451,7 +455,7 @@ lista *fifoPP1, lista *fifoPP2, lista *fifoPP12, lista *fifoPP22, pointer fifoPP
     verificaCaidos(fifoPP1, fifoPP2, fifoPP12, fifoPP22, iteracao, caidos);   //verifica se o primeiro caiu, se sim, retira ele e todos seguintes que cairam
 
     if (*alternate == 0) {  //momento para pousar os aviões voando
-        pousar(fifoPP1, fifoPP2, fifoPP12, fifoPP22, fifoPP3, pousados, pousadosQUASE);
+        pousar(fifoPP1, fifoPP2, fifoPP12, fifoPP22, fifoPP3, pousados, pousadosQUASE, fifoVP3, pousados);
 
         *alternate = 1;
     }
