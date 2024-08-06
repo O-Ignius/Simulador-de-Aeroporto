@@ -15,10 +15,10 @@ void relatorioAvioes(int pousadosQUASE, int vooGerados, int pousadoGerados) {
     printf("Aviões voando gerados nesta iteração: \t\t\t%d \nAviões prontos para decolar gerados nesta iteração: \t%d \n\n", vooGerados, pousadoGerados);
 }
 
-void relatórioFilasVoo(lista *fifoVP1, lista *fifoVP2, lista *fifoVP3) {
+void relatórioFilasVoo(lista *fifoVP1, lista *fifoVP2, lista *fifoVP3, float tempM) {
     int control = 0;
 
-    printf("\n\t\t!! FILAS DE VOO !!\n");
+    printf("\n\t\t!! FILAS DE VOO !!    Tempo médio de fila: %0.2f\n", tempM);
     if (fifoVP1->first != NULL) {
         printf("Fila 1 (Pista 1)     Tempo médio de decolagem: %d iterações \n\tid do avião: %0.0f | combustível: %d \n", fifoVP1->tam, fifoVP1->first->item.id, fifoVP1->first->item.combustivel);
         control++;
@@ -36,10 +36,10 @@ void relatórioFilasVoo(lista *fifoVP1, lista *fifoVP2, lista *fifoVP3) {
     }
 }
 
-void relatórioFilasAterrissagem(lista *fifoPP1, lista *fifoPP2, lista *fifoPP12, lista *fifoPP22) {
+void relatórioFilasAterrissagem(lista *fifoPP1, lista *fifoPP2, lista *fifoPP12, lista *fifoPP22, float tempM) {
     int control = 0;
 
-    printf("\n\t\t!! FILAS DE POUSO !!\n");
+    printf("\n\t\t!! FILAS DE POUSO !!    Tempo médio de fila: %0.2f\n", tempM);
     if (fifoPP1->first != NULL) {
         printf("Fila 1 (Pista 1):     Tempo médio de decolagem: %d iterações \n\tid do avião: %0.0f | combustível: %d \n", fifoPP1->tam, fifoPP1->first->item.id, fifoPP1->first->item.combustivel);
         control++;
@@ -63,7 +63,7 @@ void relatorioDinam(int decolados, int pousados, int caidos) {
     printf("\nTotal de aviões pousados: \t%d \nTotal de aviões decolados: \t%d \nTotal quedas de aviões: \t%d \n", pousados, decolados, caidos);
 }
 
-void relatorioGeral(int decolados, int pousados, int caidos, int iteracoes, int pousadoGerados, int vooGerados) {
-    printf("\t\t!! RELATÓRIO FINAL !! \nTotal de aviões prontos para decolagem criados: \t%d\nTotal de aviões voando criados: \t\t\t%d \nTotal de aviões pousados: \t\t\t\t%d \nTotal de aviões decolados: \t\t\t\t%d \nTotal quedas de aviões: \t\t\t\t%d \nTotal de iterações: \t\t\t\t\t%d\n", pousadoGerados, vooGerados, pousados, decolados, caidos, (iteracoes - 2));
+void relatorioGeral(int decolados, int pousados, int caidos, int iteracoes, int pousadoGerados, int vooGerados, float tempMTOTALVOO, float tempMTOTALPOUSO) {
+    printf("\t\t!! RELATÓRIO FINAL !! \nTotal de aviões prontos para decolagem criados: \t%d\nTotal de aviões voando criados: \t\t\t%d \nTotal de aviões pousados: \t\t\t\t%d \nTotal de aviões decolados: \t\t\t\t%d \nTotal quedas de aviões: \t\t\t\t%d \nTotal de iterações: \t\t\t\t\t%d\nTempo médio total das pistas de VOO: \t\t\t%0.2f\nTempo médio total das pistas de POUSO: \t\t\t%0.2f\n", pousadoGerados, vooGerados, pousados, decolados, caidos, (iteracoes - 2), tempMTOTALVOO, tempMTOTALPOUSO);
 }
 

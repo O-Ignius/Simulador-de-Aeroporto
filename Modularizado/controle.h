@@ -26,6 +26,7 @@ void verificaCaidos(lista *fifoPP1, lista *fifoPP2, lista *fifoPP12, lista *fifo
 
 //função central do programa
 void centralControle(int iteracao, int *idP, int *idV, int *alternate, lista *fifoVP1, lista *fifoVP2, lista *fifoVP3, int *decolados, 
-lista *fifoPP1, lista *fifoPP2, lista *fifoPP12, lista *fifoPP22, pointer fifoPP3, int *pousados, int *caidos, int *pousadosQUASE, int *vooGerados, int *pousadoGerados);
+lista *fifoPP1, lista *fifoPP2, lista *fifoPP12, lista *fifoPP22, pointer fifoPP3, int *pousados, int *caidos, int *pousadosQUASE,
+int *vooGerados, int *pousadoGerados, float *tempMTOTALVOO, float *tempMTOTALPOUSO);
 
 #endif

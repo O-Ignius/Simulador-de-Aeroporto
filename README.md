@@ -14,3 +14,5 @@ Fila com alocação dinâmica
 A cada iteração são gerados um número aleatório de aviões, entre 0 a 3, tanto aviões que estão pousados, aguardando decolagem, quanto aviões que estão voando, aguardando o pouso.
 Há um loop no main que realiza cada iteração chamando as funções correspondentes.
 A diminuição de combustivel ocorre somente com o primeiro de cada fila a cada iteração (exceto quando o primeiro irá cair, ou seja, ao diminuir seu combustível, este fica menor ou igual a zero, quando isso ocorre, o avião é retirado da fila e é verificado se o próximo irá cair ou somente será necessário diminuir seu combustível)
+O relatório de filas a cada iteração é gerado pegando o valor da iteração a qual o avião foi gerado, subtraido da iteração atual, isso para todos os aviões da 1° posição de todas as filas referentes ao relatório e dividido pelo número de filas.
+O relatório de filas ao final soma todos os valores obtidos no relatório de filas a cada iteração, sem ter dividido-o e, ao final, dividi-se pelo número de aviões pousados ou decolados.

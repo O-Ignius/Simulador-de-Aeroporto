@@ -169,9 +169,18 @@ void verificaCaidos(lista *fifoPP1, lista *fifoPP2, lista *fifoPP12, lista *fifo
     diminuiCombustivel(fifoPP22, iteraAtual, caidos);
 }
 
+int retornaTempoFila(lista FIFO, int iteracaoAtual) {
+    if (FIFO.first != NULL) {
+        return((iteracaoAtual - FIFO.first->item.iteracaoCriacao));
+    }
+    return 0;
+}
+
 void centralControle(int iteracao, int *idP, int *idV, int *alternate, lista *fifoVP1, lista *fifoVP2, lista *fifoVP3, int *decolados, 
-lista *fifoPP1, lista *fifoPP2, lista *fifoPP12, lista *fifoPP22, pointer fifoPP3, int *pousados, int *caidos, int *pousadosQUASE, int *vooGerados, int *pousadoGerados) {
+lista *fifoPP1, lista *fifoPP2, lista *fifoPP12, lista *fifoPP22, pointer fifoPP3, int *pousados, int *caidos, int *pousadosQUASE, 
+int *vooGerados, int *pousadoGerados, float *tempMTOTALVOO, float *tempMTOTALPOUSO) {
     int qntAV, pousadosIteracao, voandoIteracao;
+    float tempMedioVOO = 0, tempMedioPOUSO = 0;
     aviao auxAV;
     
     //cria aviões pousados prontos para decolar
@@ -204,6 +213,21 @@ lista *fifoPP1, lista *fifoPP2, lista *fifoPP12, lista *fifoPP22, pointer fifoPP
 
     verificaCaidos(fifoPP1, fifoPP2, fifoPP12, fifoPP22, iteracao, caidos);   //verifica se o primeiro caiu, se sim, retira ele e todos seguintes que cairam
 
+    //tempo medio
+    //filas decolagem
+    tempMedioVOO += retornaTempoFila(*fifoVP1, iteracao);
+    tempMedioVOO += retornaTempoFila(*fifoVP2, iteracao);
+    tempMedioVOO += retornaTempoFila(*fifoVP3, iteracao);
+    (*tempMTOTALVOO) += tempMedioVOO;
+
+    //filas pouso
+    tempMedioPOUSO += retornaTempoFila(*fifoPP1, iteracao);
+    tempMedioPOUSO += retornaTempoFila(*fifoPP2, iteracao);
+    tempMedioPOUSO += retornaTempoFila(*fifoPP12, iteracao);
+    tempMedioPOUSO += retornaTempoFila(*fifoPP22, iteracao);
+    (*tempMTOTALPOUSO) += tempMedioPOUSO;
+    //fim tempo médio
+
     if (*alternate == 0) {  //momento para pousar os aviões voando
         pousar(fifoPP1, fifoPP2, fifoPP12, fifoPP22, fifoPP3, pousados, pousadosQUASE, fifoVP3, pousados);
 
@@ -216,8 +240,8 @@ lista *fifoPP1, lista *fifoPP2, lista *fifoPP12, lista *fifoPP22, pointer fifoPP
     }
 
     printf("\t\t!! RELATÓRIO PARCIAL !!\n");
-    relatórioFilasVoo(fifoVP1, fifoVP2, fifoVP3);
-    relatórioFilasAterrissagem(fifoPP1, fifoPP2, fifoPP12, fifoPP22);
+    relatórioFilasVoo(fifoVP1, fifoVP2, fifoVP3, (tempMedioVOO / 3));
+    relatórioFilasAterrissagem(fifoPP1, fifoPP2, fifoPP12, fifoPP22, (tempMedioPOUSO / 4));
     relatorioDinam(*decolados, *pousados, *caidos);
     relatorioAvioes(*pousadosQUASE, voandoIteracao, pousadosIteracao);
 }
